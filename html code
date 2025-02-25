@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tetris Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #1a1a2e;
+            font-family: Arial, sans-serif;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #game-canvas {
+            background: #16213e;
+            border: 2px solid #0f3460;
+        }
+
+        #score {
+            color: white;
+            font-size: 24px;
+        }
+
+        .grid {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #e94560;
+            border: 1px solid #0f3460;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="score">Score: 0</div>
+        <canvas id="game-canvas" width="200" height="400"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        let score = 0;
+
+        const GRID_SIZE = 20;
+        const COLS = canvas.width / GRID_SIZE;
+        const ROWS = canvas.height / GRID_SIZE;
+
+        // Tetris pieces (Tetrominoes)
+        const SHAPES = [
+            [[1, 1, 1, 1]], // I
+            [[1, 1], [1, 1]], // O
+            [[1, 1, 1], [0, 1, 0]], // T
+            [[1, 1, 1], [1, 0, 0]], // L
+            [[1, 1, 1], [0, 0, 1]] // J
+        ];
+
+        const COLORS = ['#e94560', '#f7d794', '#54a0ff', '#00d2d3', '#ff9ff3'];
+
+        let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+        let currentPiece;
+        let gameOver = false;
+
+        class Piece {
+            constructor() {
+                this.shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+                this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                this.x = Math.floor(COLS / 2) - Math.floor(this.shape[0].length / 2);
+                this.y = 0;
+            }
+
+            draw() {
+                this.shape.forEach((row, dy) => {
+                    row.forEach((value, dx) => {
+                        if (value) {
+                            ctx.fillStyle = this.color;
+                            ctx.fillRect((this.x + dx) * GRID_SIZE, (this.y + dy) * GRID_SIZE, GRID_SIZE - 1, GRID_SIZE - 1);
+                        }
+                    });
+                });
+            }
+
+            move(dx, dy) {
+                this.x += dx;
+                this.y += dy;
+            }
+
+            rotate() {
+                const rotated = this.shape[0].map((_, index) =>
+                    this.shape.map(row => row[index]).reverse()
+                );
+                if (!this.collision(0, 0, rotated)) {
+                    this.shape = rotated;
+                }
+            }
+
+            collision(dx
